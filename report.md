@@ -15,7 +15,7 @@ The neural network was implemented with the following characteristics:
 
 - **Architecture**: 
   - Input layer: 30 neurons (matching feature dimensions)
-  - Hidden layer: 10 neurons with ReLU activation
+  - Single layer with sigmoid activation
   - Output layer: 1 neuron with sigmoid activation
   
 - **Training Parameters**:
@@ -24,16 +24,18 @@ The neural network was implemented with the following characteristics:
   - Convergence criterion: loss change < 0.0001
   
 - **Best Configuration**:
-  - Learning rate: 0.1
-  - Initialization: standard
-  - Epochs until convergence: ~195-213
+  - Learning rate: 0.01 with xavier/he initialization (98.25% test accuracy)
+  - Also achieved 98.25% with lr=0.1 and standard initialization
+  - Epochs until convergence: ~450-560 for lr=0.01, ~200 for lr=0.1
 
 #### 1.3 Decision Tree Implementation
 The decision tree was implemented using the ID3 algorithm with the following characteristics:
 
 - **Split Criterion**: Information Gain using Entropy
 - **Maximum Depth**: 5 (for better visualization and to prevent overfitting)
-- **Feature Types**: All numerical, with binary splits
+- **Feature Types**: Supports both numerical and categorical features
+  - Numerical features: Uses binary splits with "≤" threshold
+  - Categorical features: Uses equality splits
 - **Stopping Criteria**: 
   - Maximum depth reached
   - Pure node (single class)
@@ -117,6 +119,32 @@ Both models achieved strong performance on the breast cancer classification task
 4. **Implementation Complexity**:
    - Decision Tree implementation is simpler and more straightforward
    - Neural Network requires more complex implementation and tuning
+
+#### 4.1 Analysis of Neural Network's Consistent High Performance
+
+The neural network achieved remarkably high accuracy (>90%) across all configurations of learning rates (0.01, 0.1, 0.5) and initialization methods (xavier, he, standard) due to several key factors:
+
+1. **Effective Architecture Design**
+   - Single-layer architecture with sigmoid activation proved optimal for binary classification
+   - Implementation included robust numerical stability measures
+   - 30 input features provided rich, discriminative information
+
+2. **Learning Rate Adaptability**
+   - Slower rates (0.01): Most stable convergence with highest accuracy
+   - Medium rates (0.1): Balanced speed and stability
+   - Faster rates (0.5): Quick convergence while maintaining accuracy
+
+3. **Initialization Method Robustness**
+   - Xavier: Optimal for sigmoid activation, maintaining variance
+   - He: Provided effective weight distribution despite sigmoid use
+   - Standard: Simple but effective for this binary classification
+
+4. **Dataset Characteristics**
+   - Standardized features ensured consistent training
+   - Binary nature aligned perfectly with sigmoid activation
+   - Clear feature-class relationships made learning easier
+
+This consistent high performance across configurations suggests that the breast cancer classification problem has clear, learnable patterns that can be effectively captured by a simple neural network, regardless of specific hyperparameter choices.
 
 ### 5. Recommendations
 
