@@ -79,26 +79,30 @@ def find_optimal_split(features: np.ndarray, labels: np.ndarray,
             continue
             
         feature_type = feature_types[feature_idx]
+        feature_values = features[:, feature_idx]
+        
         if feature_type == 'numerical':
             # For numerical features, try different thresholds
-            unique_values = np.unique(features[:, feature_idx])
+            unique_values = np.sort(np.unique(feature_values))
             
             # Use midpoints between consecutive values as thresholds
-            thresholds = (unique_values[:-1] + unique_values[1:]) / 2
-            
-            for threshold in thresholds:
-                current_gain = calculate_split_quality(
-                    features, labels, feature_idx, threshold, feature_type)
+            if len(unique_values) > 1:  # Check if we have at least 2 unique values
+                thresholds = np.array([(unique_values[i] + unique_values[i+1])/2 
+                                     for i in range(len(unique_values)-1)])
                 
-                if current_gain > best_gain:
-                    best_gain = current_gain
-                    optimal_feature = feature_idx
-                    optimal_threshold = threshold
-                    optimal_type = feature_type
+                for threshold in thresholds:
+                    current_gain = calculate_split_quality(
+                        features, labels, feature_idx, threshold, feature_type)
+                    
+                    if current_gain > best_gain:
+                        best_gain = current_gain
+                        optimal_feature = feature_idx
+                        optimal_threshold = threshold
+                        optimal_type = feature_type
                     
         else:  # categorical
             # For categorical features, try each unique category
-            categories = np.unique(features[:, feature_idx])
+            categories = np.unique(feature_values)
             
             for category in categories:
                 current_gain = calculate_split_quality(
@@ -206,52 +210,38 @@ def visualize_tree(node: TreeNode, depth: int = 0, feature_names: List[str] = No
     print(f"{indent}If False:")
     visualize_tree(node.right_child, depth + 1, feature_names, feature_types)
 
-if __name__ == "__main__":
-    # Load breast cancer dataset (all numerical features)
+def main():
+    """Main function to demonstrate the decision tree implementation."""
     print("Loading breast cancer dataset...")
     data = load_breast_cancer()
     X = data.data
     y = data.target
-    feature_names = data.feature_names
     
-    # Define feature types (all numerical for breast cancer dataset)
+    # Split the data
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42)
+    
+    # Create feature types list (all numerical for breast cancer dataset)
     feature_types = ['numerical'] * X.shape[1]
     
-    # Create a small example with both numerical and categorical features
-    print("\nCreating example with mixed feature types...")
-    X_mixed = np.column_stack([
-        X[:, :2],  # Take first two numerical features
-        np.random.choice(['A', 'B', 'C'], size=X.shape[0]),  # Add categorical feature
-        np.random.choice(['Yes', 'No'], size=X.shape[0])     # Add another categorical feature
-    ])
-    feature_types_mixed = ['numerical', 'numerical', 'categorical', 'categorical']
-    feature_names_mixed = ['mean radius', 'mean texture', 'category1', 'category2']
-    
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_mixed, y, test_size=0.2, random_state=42)
-    
-    # Train the tree
     print("\nTraining decision tree...")
-    decision_tree = construct_tree(X_train, y_train, feature_types_mixed)
-    
-    # Visualize the tree
-    print("\nDecision Tree Structure:")
-    visualize_tree(decision_tree, feature_names=feature_names_mixed,
-                  feature_types=feature_types_mixed)
+    decision_tree = construct_tree(X_train, y_train, feature_types)
     
     # Make predictions
-    print("\nMaking predictions...")
-    predictions = predict_samples(X_test, decision_tree)
+    train_predictions = predict_samples(X_train, decision_tree)
+    test_predictions = predict_samples(X_test, decision_tree)
     
     # Calculate accuracy
-    accuracy = np.mean(predictions == y_test)
-    print(f"\nTest Accuracy: {accuracy:.4f}")
+    train_accuracy = np.mean(train_predictions == y_train)
+    test_accuracy = np.mean(test_predictions == y_test)
     
-    # Show sample predictions
-    print("\nSample predictions (first 5 test cases):")
-    for i in range(5):
-        print(f"True: {y_test[i]}, Predicted: {predictions[i]}")
-        print("Feature values:")
-        for j, (name, value) in enumerate(zip(feature_names_mixed, X_test[i])):
-            print(f"  {name}: {value}")
+    print(f"\nResults:")
+    print(f"Training Accuracy: {train_accuracy:.4f}")
+    print(f"Test Accuracy: {test_accuracy:.4f}")
+    
+    print("\nTree Visualization:")
+    visualize_tree(decision_tree, feature_names=data.feature_names, 
+                  feature_types=feature_types)
+
+if __name__ == "__main__":
+    main()
