@@ -1,0 +1,62 @@
+Decision Tree Results
+===================
+
+Training Accuracy: 0.9934
+Test Accuracy: 0.9386
+
+Tree Structure:
+==============
+
+mean concave points <= 0.051
+├── True:
+│   worst radius <= 16.830
+│   ├── True:
+│   │   radius error <= 0.626
+│   │   ├── True:
+│   │   │   worst texture <= 30.145
+│   │   │   ├── True:
+│   │   │   │   Predict class: 1
+│   │   │   └── False:
+│   │   │       worst radius <= 14.430
+│   │   │       ├── True:
+│   │   │       │   Predict class: 1
+│   │   │       └── False:
+│   │   │           Predict class: 1
+│   │   └── False:
+│   │       mean smoothness <= 0.091
+│   │       ├── True:
+│   │       │   Predict class: 1
+│   │       └── False:
+│   │           Predict class: 0
+│   └── False:
+│       mean texture <= 16.190
+│       ├── True:
+│       │   Predict class: 1
+│       └── False:
+│           concave points error <= 0.010
+│           ├── True:
+│           │   Predict class: 0
+│           └── False:
+│               Predict class: 1
+└── False:
+    worst perimeter <= 114.450
+    ├── True:
+    │   worst texture <= 25.655
+    │   ├── True:
+    │   │   worst concave points <= 0.166
+    │   │   ├── True:
+    │   │   │   Predict class: 1
+    │   │   └── False:
+    │   │       Predict class: 0
+    │   └── False:
+    │       perimeter error <= 1.558
+    │       ├── True:
+    │       │   mean radius <= 13.340
+    │       │   ├── True:
+    │       │   │   Predict class: 0
+    │       │   └── False:
+    │       │       Predict class: 1
+    │       └── False:
+    │           Predict class: 0
+    └── False:
+        Predict class: 0
