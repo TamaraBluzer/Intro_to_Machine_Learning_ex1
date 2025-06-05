@@ -5,18 +5,10 @@ from sklearn.preprocessing import StandardScaler
 from typing import Tuple, List, Dict, Union
 
 class BinaryNeuralNetwork:
-    """Single layer neural network for binary classification."""
     
     def __init__(self, input_dim: int, learning_rate: float = 0.1, 
                  init_method: str = "xavier"):
-        """
-        Initialize the neural network.
-        
-        Args:
-            input_dim: Number of input features
-            learning_rate: Learning rate for gradient descent
-            init_method: Weight initialization method ("xavier", "he", "standard")
-        """
+
         self.input_dim = input_dim
         self.learning_rate = learning_rate
         self.init_method = init_method
@@ -25,9 +17,9 @@ class BinaryNeuralNetwork:
         self._initialize_parameters()
         
     def _initialize_parameters(self) -> None:
-        """Initialize network parameters based on the chosen method."""
+        # initialize the weights and bias with3 different options
         if self.init_method == "xavier":
-            # Xavier/Glorot initialization
+            # Xavier initialization
             limit = np.sqrt(6 / (self.input_dim + 1))
             self.weights = np.random.uniform(-limit, limit, (self.input_dim, 1))
         elif self.init_method == "he":
@@ -41,39 +33,32 @@ class BinaryNeuralNetwork:
     
     @staticmethod
     def sigmoid(z: np.ndarray) -> np.ndarray:
-        """Apply sigmoid activation function."""
-        # Clip values to avoid overflow
-        z = np.clip(z, -500, 500)
+        z = np.clip(z, -500, 500) # we use the sigmoid activation func and clipping the input values to prevent numerical overflow
         return 1 / (1 + np.exp(-z))
     
     def forward(self, X: np.ndarray) -> np.ndarray:
-        """Forward pass through the network."""
         z = np.dot(X, self.weights) + self.bias
         z = np.clip(z, -500, 500)
-        return self.sigmoid(z)
+        return self.sigmoid(z) # applying the sigmoid activation function on X*w+b
     
     def compute_loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        """Compute binary cross-entropy loss."""
-        epsilon = 1e-15
+        epsilon = 1e-15 # prevent log(0)
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-        return -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        return -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred)) #cross entropy loss
     
     def compute_gradients(self, X: np.ndarray, y_true: np.ndarray, 
                          y_pred: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """Compute gradients for weights and bias."""
         m = X.shape[0]
         error = y_pred - y_true
-        dW = (1/m) * np.dot(X.T, error)
-        db = (1/m) * np.sum(error)
+        dW = (1/m) * np.dot(X.T, error) # gradient for weights
+        db = (1/m) * np.sum(error)      # gradient for bias
         return dW, db
     
     def update_parameters(self, dW: np.ndarray, db: np.ndarray) -> None:
-        """Update network parameters using gradient descent."""
-        self.weights -= self.learning_rate * dW
-        self.bias -= self.learning_rate * db
+        self.weights -= self.learning_rate * dW # updating weights
+        self.bias -= self.learning_rate * db    # updating bias
     
-    def train_step(self, X: np.ndarray, y: np.ndarray) -> float:
-        """Perform one training step and return the loss."""
+    def train_step(self, X: np.ndarray, y: np.ndarray) -> float: #single training step
         y_pred = self.forward(X)
         loss = self.compute_loss(y, y_pred)
         dW, db = self.compute_gradients(X, y, y_pred)
@@ -81,18 +66,16 @@ class BinaryNeuralNetwork:
         return loss
     
     def predict(self, X: np.ndarray, threshold: float = 0.5) -> np.ndarray:
-        """Make binary predictions."""
         return (self.forward(X) >= threshold).astype(int)
     
     def evaluate(self, X: np.ndarray, y: np.ndarray) -> Tuple[float, float]:
-        """Evaluate the model and return loss and accuracy."""
+        # compute and return accuracy and loss
         y_pred = self.forward(X)
         loss = self.compute_loss(y, y_pred)
         accuracy = np.mean((y_pred >= 0.5).astype(int) == y)
         return loss, accuracy
 
 class ModelTrainer:
-    """Handles the training process and visualization."""
     
     def __init__(self, input_dim: int):
         self.input_dim = input_dim
@@ -105,12 +88,9 @@ class ModelTrainer:
                     X_test: np.ndarray, y_test: np.ndarray,
                     learning_rates: List[float], init_methods: List[str],
                     epochs: int = 1000, convergence_threshold: float = 1e-4) -> None:
-        """Train multiple models with different configurations.
-        
-        Args:
-            epochs: Maximum number of epochs
-            convergence_threshold: Stop if loss change is smaller than this
-        """
+
+        # for each learning rate that we have and each initialization we will calculate the train and test loss and accuracy
+        # this way we will find out what's the best initialization and learning rate
         self.X_train = X_train
         for init_method in init_methods:
             for lr in learning_rates:
@@ -155,7 +135,6 @@ class ModelTrainer:
                 print(f"Training completed. Test accuracy: {test_accuracy:.4f}")
     
     def plot_learning_curves(self) -> None:
-        """Generate clear and readable learning curve plots."""
         # Training Loss Plot
         plt.figure(figsize=(12, 6))
         for result in self.results:
