@@ -1,3 +1,6 @@
+# 315287441 tamara bluzer
+#211490362 itamar kolodny
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_breast_cancer
